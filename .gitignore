@@ -1,0 +1,4 @@
+dist/*
+axolotls.egg-info/*
+
+axolotls/version.py
