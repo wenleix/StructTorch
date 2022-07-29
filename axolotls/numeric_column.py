@@ -13,19 +13,20 @@ class NumericColumn(ColumnBase):
         self._presence = presence
 
     def __getitem__(self, key):
-        pass
+        assert isinstance(key, int)
 
-    def __repr__(self) -> str:
-        return f"NumericaColumn(\n\tvalues={self._values}\n\tdtype={self._dtype}\n)"
+        if self.presence is not None:
+            return self.values[key] if self.presence[key] else None
 
-    def __str__(self) -> str:
-        return self.__repr__()
+        return self.values[key]
 
+    @property
     def values(self) -> torch.Tensor:
-        return self._data
+        return self._values
     
+    @property
     def presence(self) -> Optional[torch.BoolTensor]:
         return self._presence
 
     def __len__(self) -> int:
-        return self._data.size(0)
+        return len(self._values)
