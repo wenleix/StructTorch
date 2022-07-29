@@ -12,6 +12,8 @@ import re
 import typing as ty
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, is_dataclass, replace
+import torch
+import sys
 
 # -----------------------------------------------------------------------------
 # Aux
@@ -580,6 +582,10 @@ def is_any(t):
     return t.typecode == "?"
 
 
-# Infer types from values -----------------------------------------------------
-PREFIX_LENGTH = 5
+def _dtype_from_pytorch_dtype(dtype: torch.dtype, nullable: bool = False) -> DType:
+    if dtype == torch.int32:
+        return Int32(nullable=nullable)
+    if dtype == torch.int64:
+        return Int64(nullable=nullable)
 
+    raise ValueError(f"Unsupported PyTorch dtype: {dtype}")
