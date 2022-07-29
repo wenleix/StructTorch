@@ -13,12 +13,17 @@ class NumericColumn(ColumnBase):
         self._presence = presence
 
     def __getitem__(self, key):
-        assert isinstance(key, int)
+        if isinstance(key, int):
+            if self.presence is None or self.presence[key]:
+                return self.values[key].item()
+            return None
+        elif isinstance(key, slice):
+            values = self.values[key]
+            presence = self.presence[key] if self.presence is not None else None
+            return NumericColumn(values=values, presence=presence)
+        else:
+            raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
-        if self.presence is not None:
-            return self.values[key] if self.presence[key] else None
-
-        return self.values[key]
 
     @property
     def values(self) -> torch.Tensor:
