@@ -72,7 +72,11 @@ setup(
     author='PyTorch Team',
     author_email='packages@pytorch.org',
     license='BSD',
-    install_requires=['requests', pytorch_package_dep],
+    install_requires=[
+        'requests',
+        'numpy<1.22',   # Support Python 3.7
+        pytorch_package_dep
+    ],
     python_requires='>=3.7',
     classifiers=[
         "Intended Audience :: Developers",

@@ -12,3 +12,8 @@ You can then install Axolotos from source:
 ```
 python setup.py install
 ```
+
+For development, use the following command to install instead:
+```
+python setup.py develop
+```

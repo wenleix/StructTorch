@@ -2,3 +2,7 @@ dist/*
 axolotls.egg-info/*
 
 axolotls/version.py
+
+# Compiled python
+*.pyc
+*.pyd
