@@ -1,3 +1,7 @@
+# Axolotls
+
+Axolotls implements [Arrow Memory Layout](https://arrow.apache.org/docs/format/Columnar.html#physical-memory-layout) on top of PyTorch, with lightweight DataFrame-flavored API.
+
 ## Installation
 
 You will need Python 3.7 or later. Also, we highly recommend installing an [Miniconda](https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links) environment.
