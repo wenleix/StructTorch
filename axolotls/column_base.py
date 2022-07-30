@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from . import dtypes as dt
-from tabulate import tabulate
 
 class ColumnBase(ABC):
     @abstractmethod
@@ -34,6 +33,12 @@ class ColumnBase(ABC):
     def __str__(self) -> str:
         return self.__repr__()
 
- 
+
+    @abstractmethod
+    def to_arrow(self):
+        """
+        Experimental interop API with soft dependency on PyArrow
+        """
+        raise NotImplementedError
 
     

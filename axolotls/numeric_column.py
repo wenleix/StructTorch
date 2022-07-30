@@ -60,3 +60,12 @@ class NumericColumn(ColumnBase):
 
     def __len__(self) -> int:
         return len(self._values)
+
+    def to_arrow(self):
+        # TODO: Check whether PyArrow is available 
+        import pyarrow as pa
+
+        values = self.values.numpy()
+        mask = ~self.presence.numpy() if self.presence is not None else None
+
+        return pa.array(values, mask=mask)
