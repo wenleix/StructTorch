@@ -67,10 +67,10 @@ setup(
     # Metadata
     name='axolotls',
     version=VERSION,
-    description='Composable data loading modules for PyTorch',
-    url='https://github.com/pytorch/data',
-    author='PyTorch Team',
-    author_email='packages@pytorch.org',
+    description='Lightweight DataFrame library on PyTorch',
+    url='https://github.com/wenleix/axolotls',
+    author='Wenlei Xie',
+    author_email='wenlei.oss.pure@gmail.com',
     license='BSD',
     install_requires=[
         'requests',

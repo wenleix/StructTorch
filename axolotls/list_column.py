@@ -40,7 +40,7 @@ class ListColumn(ColumnBase):
             raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
     @property
-    def values(self) -> torch.Tensor:
+    def values(self) -> ColumnBase:
         return self._values
 
     @property
@@ -53,3 +53,19 @@ class ListColumn(ColumnBase):
 
     def __len__(self) -> int:
         return len(self._offsets) - 1
+
+    def to_arrow(self):
+        if self.presence is not None:
+            # pyarrow.ListArray.from_arrays doesn't take mask array
+            # null value is marked in offsets array: https://arrow.apache.org/docs/python/generated/pyarrow.ListArray.html#pyarrow.ListArray.from_arrays
+            # TODO: We should still be able to construct the desired offsets array with the null buffer?
+            raise NotImplementedError
+
+        # TODO: Check whether PyArrow is available 
+        import pyarrow as pa
+        values_array = self.values.to_arrow()
+        # TODO: enforce offset to be int32 dtype
+        offsets_array = pa.array(self.offsets.to(torch.int32).numpy())
+
+        return pa.ListArray.from_arrays(values=values_array, offsets=offsets_array)
+    
