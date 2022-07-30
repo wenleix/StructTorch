@@ -1,4 +1,4 @@
-# Based on https://github.com/pytorch/torcharrow/blob/ba822da72825150e971c3ee7b6dcb81668eb79f2/torcharrow/dtypes.py
+# Forked from https://github.com/pytorch/torcharrow/blob/ba822da72825150e971c3ee7b6dcb81668eb79f2/torcharrow/dtypes.py
 # Changes may apply
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -587,5 +587,9 @@ def _dtype_from_pytorch_dtype(dtype: torch.dtype, nullable: bool = False) -> DTy
         return Int32(nullable=nullable)
     if dtype == torch.int64:
         return Int64(nullable=nullable)
+    if dtype == torch.float32:
+        return Float32(nullable=nullable)
+    if dtype == torch.float64:
+        return Float32(nullable=nullable)
 
     raise ValueError(f"Unsupported PyTorch dtype: {dtype}")

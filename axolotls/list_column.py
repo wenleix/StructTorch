@@ -12,6 +12,8 @@ class ListColumn(ColumnBase):
     ) -> None:
         super().__init__(dtype=dt.List(values.dtype, nullable=presence is not None))
 
+        if not isinstance(values, ColumnBase):
+            raise ValueError("ListColumn expects values to be ColumnBase")
         if offsets.dim() != 1:
             raise ValueError("ListColumn expects 1D offsets Tensor")
 

@@ -24,6 +24,31 @@ class NumericColumn(ColumnBase):
         else:
             raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
+    def fill_null(self, val):
+        if self.presence is None:
+            # TODO: should we return a copy here?
+            return self
+
+        values = self.values.clone()
+        values[~self.presence] = val
+        return NumericColumn(values=values)
+
+    def fill_null_(self, val):
+        if self.presence is None:
+            return self
+        
+        self.values[~self.presence] = val
+        self._presence = None
+        self._dtype = self._dtype.with_null(nullable=False)
+
+        return self
+
+    # Common PyTorch ops
+    def logit(self, eps=None):
+        return NumericColumn(
+            values=self.values.logit(eps),
+            presence=self.presence,
+        )
 
     @property
     def values(self) -> torch.Tensor:
