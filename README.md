@@ -1,6 +1,6 @@
 # Axolotls
 
-Axolotls implements [Arrow Memory Layout](https://arrow.apache.org/docs/format/Columnar.html#physical-memory-layout) on top of PyTorch, with lightweight DataFrame-flavored API.
+Axolotls implements [Arrow Memory Layout](https://arrow.apache.org/docs/format/Columnar.html#physical-memory-layout) on top of PyTorch, with lightweight DataFrame-flavored API. Such structures are often useful to perform pre-processing after data is in Tensor format.
 
 ## Installation
 
