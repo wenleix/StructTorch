@@ -10,6 +10,7 @@ class ListColumn(ColumnBase):
         offsets: torch.Tensor, 
         presence: Optional[torch.BoolTensor] = None
     ) -> None:
+        # TODO: enforce offsets is int32 dtype
         super().__init__(dtype=dt.List(values.dtype, nullable=presence is not None))
 
         if not isinstance(values, ColumnBase):

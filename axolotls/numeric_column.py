@@ -9,8 +9,12 @@ class NumericColumn(ColumnBase):
 
         if values.dim() != 1:
             raise ValueError("NumericCollumn expects 1D values Tensor")
+
         self._values = values
         self._presence = presence
+
+        if presence is not None and (values.shape != presence.shape):
+            raise ValueError(f"Mismatched shape for values({values.shape}) and presence({presence.shape})")
 
     def __getitem__(self, key):
         if isinstance(key, int):
