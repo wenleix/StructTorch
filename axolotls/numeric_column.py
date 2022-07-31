@@ -17,13 +17,15 @@ class NumericColumn(ColumnBase):
             if self.presence is None or self.presence[key]:
                 return self.values[key].item()
             return None
-        elif isinstance(key, slice):
+
+        if isinstance(key, slice):
             values = self.values[key]
             presence = self.presence[key] if self.presence is not None else None
             return NumericColumn(values=values, presence=presence)
-        else:
-            raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
+        raise ValueError(f"Unsupported key for __getitem__: f{key}")
+
+    # Data cleaning ops
     def fill_null(self, val):
         if self.presence is None:
             # TODO: should we return a copy here?
@@ -43,12 +45,37 @@ class NumericColumn(ColumnBase):
 
         return self
 
-    # Common PyTorch ops
-    def logit(self, eps=None):
+    # Common Arithmatic / PyTorch ops
+    def __add__(self, other):
+        if isinstance(other, NumericColumn):
+            values = self.values + other.values
+            presence = None
+            if self.presence is not None and other.presence is not None:
+                presence = self.presence & other.presence
+            else:
+                presence = self.presence or other.presence
+
+            return NumericColumn(values, presence=presence)
+
+        if isinstance(other, (float, int, torch.Tensor)):
+            return NumericColumn(self.values + other, presence=self.presence)
+
+        raise ValueError(f"Unsupported value {other}")
+
+    def log(self) -> "NumericColumn":
         return NumericColumn(
-            values=self.values.logit(eps),
+            values=self.values.log(),
             presence=self.presence,
         )
+
+    def logit(self, eps=None) -> "NumericColumn":
+        if isinstance(eps, (None, float, int, torch.Tensor)):
+            return NumericColumn(
+                values=self.values.logit(eps),
+                presence=self.presence,
+            )
+
+        raise ValueError(f"Unsupported value {eps}")
 
     @property
     def values(self) -> torch.Tensor:
