@@ -26,7 +26,8 @@ class ListColumn(ColumnBase):
             if self.presence is None or self.presence[key]:
                 return list(self.values[self.offsets[key] : self.offsets[key + 1]])
             return None
-        elif isinstance(key, slice):
+
+        if isinstance(key, slice):
             # convert offsets to length for selection
             lengths = self.offsets[1:] - self.offsets[:-1]
             lengths = lengths[key]
@@ -36,8 +37,8 @@ class ListColumn(ColumnBase):
             values = self.values[key]
             presence = self.presence[key] if self.presence is not None else None
             return ListColumn(values=values, offsets=offsets, presence=presence)
-        else:
-            raise ValueError(f"Unsupported key for __getitem__: f{key}")
+
+        raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
     @property
     def values(self) -> torch.Tensor:

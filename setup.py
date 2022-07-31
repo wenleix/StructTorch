@@ -92,7 +92,7 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence"
     ],
     # Package Info
-    packages=find_packages(exclude=["test*", "benchmark*"]),
+    packages=find_packages(exclude=["test*", "benchmark*", "demo*"]),
     zip_safe=False,
     cmdclass={
         'clean': clean,

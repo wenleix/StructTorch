@@ -33,7 +33,3 @@ class ColumnBase(ABC):
 
     def __str__(self) -> str:
         return self.__repr__()
-
- 
-
-    
