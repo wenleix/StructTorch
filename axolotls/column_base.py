@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from . import dtypes as dt
+from tabulate import tabulate
 
 class ColumnBase(ABC):
     @abstractmethod
