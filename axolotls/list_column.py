@@ -21,6 +21,13 @@ class ListColumn(ColumnBase):
         self._offsets = offsets
         self._presence = presence
 
+    def clone(self) -> "ListColumn":
+        return ListColumn(
+            values=self.values.detach().clone(),
+            offsets=self.offsets.detach().clone(),
+            presence=self.presence.detach().clone() if self.presence is not None else None
+        )
+
     def __getitem__(self, key):
         if isinstance(key, int):
             if self.presence is None or self.presence[key]:

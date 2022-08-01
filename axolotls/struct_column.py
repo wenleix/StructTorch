@@ -2,6 +2,7 @@ from .column_base import ColumnBase
 from . import dtypes as dt
 from typing import Dict
 from tabulate import tabulate
+import torch
 
 class StructColumn(ColumnBase):
     """
@@ -20,6 +21,14 @@ class StructColumn(ColumnBase):
     @property
     def columns(self):
         return list(self.field_columns.keys())
+
+    def clone(self) -> "StructColumn":
+        return StructColumn(
+            field_columns={
+                name: col.clone()
+                for (name, col) in self.field_columns.items()
+            }
+        )
 
     def __getitem__(self, key):
         if isinstance(key, str):

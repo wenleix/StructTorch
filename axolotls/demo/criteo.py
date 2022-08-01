@@ -11,6 +11,7 @@ dense3 = ax.NumericColumn(
     torch.tensor([2, 44, 1, -100, -100]), 
     presence=torch.tensor([True, True, True, False, False]))
 
+
 print(f"dense1\n{dense1}\n")
 print(f"dense2\n{dense2}\n")
 print(f"dense3\n{dense3}\n")
@@ -20,6 +21,10 @@ df = ax.StructColumn({
     "dense2": dense2,
     "dense3": dense3,
 })
+dense_grp = df.clone()
+df["dense_grp"] = dense_grp
+print(f"df\n{df}\n")
+
 print(f"df\n{df}\n")
 
 print(f'df["dense1"] + df["dense2"]\n{df["dense1"] + df["dense2"]}\n')
@@ -31,4 +36,9 @@ print(f"df\n{df}\n")
 
 df["dense1"] = (df["dense1"] + 3).log()
 df["dense2"] = (df["dense2"] + 3).log()
+print(f"df\n{df}\n")
+
+df["dense_grp"].fill_null_(0)
+df["dense_grp"] = (df["dense_grp"] + 3).log()
+
 print(f"df\n{df}\n")
