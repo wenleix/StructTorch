@@ -36,9 +36,9 @@ class NumericColumn(ColumnBase):
 
     def __str__(self) -> str:
         return f"""NumericaColumn(
-    values={self.values}
-    presence={self.presence}
-    dtype={self.dtype}
+    values={self.values},
+    presence={self.presence},
+    dtype={self.dtype},
 )
 """
 

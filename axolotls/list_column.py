@@ -48,11 +48,15 @@ class ListColumn(ColumnBase):
         raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
     def __str__(self) -> str:
+        values_str = str(self.values)
+        values_lines = values_str.splitlines(True)
+        values_str = values_lines[0] + '\t' + '\t'.join(values_lines[1:])
+
         return f"""ListColumn(
-    values={self.values}
-    offsets={self.offsets}
-    presence={self.presence}
-    dtype={self.dtype}
+\tvalues={values_str},
+\toffsets={self.offsets},
+\tpresence={self.presence},
+\tdtype={self.dtype}
 )
 """
 
