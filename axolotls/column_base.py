@@ -23,6 +23,10 @@ class ColumnBase(ABC):
     def __len__(self) -> int:
         raise NotImplementedError
 
+    @abstractmethod
+    def __str__(self) -> str:
+        raise NotImplementedError
+
     def __repr__(self) -> None:
         rows = [[self[idx] if self[idx] is not None else "None"] for idx in range(len(self))]
         tab = tabulate(
@@ -34,9 +38,6 @@ class ColumnBase(ABC):
             f"dtype: {self._dtype}, length: {len(self)}"
         )
         return tab + "\n" + typ
-
-    def __str__(self) -> str:
-        return self.__repr__()
 
     @abstractmethod
     def to_arrow(self):

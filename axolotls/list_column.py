@@ -47,6 +47,15 @@ class ListColumn(ColumnBase):
 
         raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
+    def __str__(self) -> str:
+        return f"""ListColumn(
+    values={self.values}
+    offsets={self.offsets}
+    presence={self.presence}
+    dtype={self.dtype}
+)
+"""
+
     @property
     def values(self) -> ColumnBase:
         return self._values
