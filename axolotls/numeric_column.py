@@ -9,8 +9,17 @@ class NumericColumn(ColumnBase):
 
         if values.dim() != 1:
             raise ValueError("NumericCollumn expects 1D values Tensor")
+        if presence is not None and (values.shape != presence.shape):
+            raise ValueError(f"Mismatched shape for values({values.shape}) and presence({presence.shape})")
+
         self._values = values
         self._presence = presence
+
+    def clone(self) -> "NumericColumn":
+        return NumericColumn(
+            values=self.values.detach().clone(),
+            presence=self.presence.detach().clone() if self.presence is not None else None
+        )
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -24,6 +33,17 @@ class NumericColumn(ColumnBase):
             return NumericColumn(values=values, presence=presence)
 
         raise ValueError(f"Unsupported key for __getitem__: f{key}")
+
+    @property
+    def values(self) -> torch.Tensor:
+        return self._values
+
+    @property
+    def presence(self) -> Optional[torch.BoolTensor]:
+        return self._presence
+
+    def __len__(self) -> int:
+        return len(self._values)
 
     # Data cleaning ops
     def fill_null(self, val):

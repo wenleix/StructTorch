@@ -12,6 +12,10 @@ class ColumnBase(ABC):
         return self._dtype
     
     @abstractmethod
+    def clone(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def __getitem__(self, key):
         raise NotImplementedError
 
