@@ -49,6 +49,9 @@ class StructColumn(ColumnBase):
         first_col = next(iter(self.field_columns.values()))
         return len(first_col)
 
+    def __str__(self) -> str:
+        raise NotImplementedError
+
     def __repr__(self):
         rows = []
         for idx in range(len(self)):

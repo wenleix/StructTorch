@@ -23,22 +23,22 @@ df = ax.StructColumn({
 })
 dense_grp = df.clone()
 df["dense_grp"] = dense_grp
-print(f"df\n{df}\n")
+print(f"df\n{df.__repr__()}\n")
 
-print(f"df\n{df}\n")
-
-print(f'df["dense1"] + df["dense2"]\n{df["dense1"] + df["dense2"]}\n')
-print(f'df["dense1"] + df["dense3"]\n{df["dense1"] + df["dense3"]}\n')
+print(f"df\n{df.__repr__()}\n")
 
 df["dense1"] = df["dense1"].fill_null(0)
 df["dense2"].fill_null_(0)
-print(f"df\n{df}\n")
+print(f"df\n{df.__repr__()}\n")
 
 df["dense1"] = (df["dense1"] + 3).log()
 df["dense2"] = (df["dense2"] + 3).log()
-print(f"df\n{df}\n")
+print(f"df\n{df.__repr__()}\n")
 
 df["dense_grp"].fill_null_(0)
 df["dense_grp"] = (df["dense_grp"] + 3).log()
 
-print(f"df\n{df}\n")
+print(f"df\n{df.__repr__()}\n")
+
+print(str(df["dense1"]))
+print(str(df["dense3"]))
