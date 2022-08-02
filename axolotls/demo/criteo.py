@@ -40,10 +40,10 @@ df["dense_grp"] = (df["dense_grp"] + 3).log()
 
 print(f"df\n{df.__repr__()}\n")
 
-print(str(df["dense1"]))
-print(str(df["dense3"]))
+print(str(df["dense1"]) + "\n")
+print(str(df["dense3"]) + "\n")
 
 col = ax.NumericColumn(torch.tensor([1, -100, 3, 4, -100, 6, 7, 8]), presence=torch.tensor([True, False, True, True, False, True, True, True]))
 list_col = ax.ListColumn(col, offsets=torch.tensor([0, 1, 3, 6, 8]))
 
-print(str(list_col))
+print(str(list_col) + "\n")
