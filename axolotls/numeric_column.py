@@ -35,12 +35,11 @@ class NumericColumn(ColumnBase):
         raise ValueError(f"Unsupported key for __getitem__: f{key}")
 
     def __str__(self) -> str:
-        return f"""NumericaColumn(
+        return f"""NumericColumn(
     values={self.values},
     presence={self.presence},
     dtype={self.dtype},
-)
-"""
+)"""
 
     @property
     def values(self) -> torch.Tensor:
