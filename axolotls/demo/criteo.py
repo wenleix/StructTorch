@@ -12,9 +12,9 @@ dense3 = ax.NumericColumn(
     presence=torch.tensor([True, True, True, False, False]))
 
 
-print(f"dense1\n{dense1}\n")
-print(f"dense2\n{dense2}\n")
-print(f"dense3\n{dense3}\n")
+print(f"dense1\n{dense1.__repr__()}\n")
+print(f"dense2\n{dense2.__repr__()}\n")
+print(f"dense3\n{dense3.__repr__()}\n")
 
 df = ax.StructColumn({
     "dense1": dense1,
@@ -47,3 +47,6 @@ col = ax.NumericColumn(torch.tensor([1, -100, 3, 4, -100, 6, 7, 8]), presence=to
 list_col = ax.ListColumn(col, offsets=torch.tensor([0, 1, 3, 6, 8]))
 
 print(str(list_col) + "\n")
+
+df["dense3"] = (1 / (df["dense3"] + 3)).logit()
+print(f"df\n{df.__repr__()}\n")

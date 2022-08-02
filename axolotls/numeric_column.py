@@ -75,17 +75,37 @@ class NumericColumn(ColumnBase):
     # Common Arithmatic / PyTorch ops
     def __add__(self, other):
         if isinstance(other, NumericColumn):
-            values = self.values + other.values
-            presence = None
-            if self.presence is not None and other.presence is not None:
-                presence = self.presence & other.presence
-            else:
-                presence = self.presence or other.presence
-
-            return NumericColumn(values, presence=presence)
+            return NumericColumn(
+                self.values + other.values,
+                presence=NumericColumn._presence_for_binary_op(self.presence, other.presence)
+            )
 
         if isinstance(other, (float, int, torch.Tensor)):
             return NumericColumn(self.values + other, presence=self.presence)
+
+        raise ValueError(f"Unsupported value {other}")
+
+    def __radd__(self, other):
+        if isinstance(other, (float, int, torch.Tensor)):
+            return NumericColumn(other + self.values, presence=self.presence)
+
+        raise ValueError(f"Unsupported value {other}")
+
+    def __truediv__(self, other):
+        if isinstance(other, NumericColumn):
+            return NumericColumn(
+                self.values / other.values,
+                presence=NumericColumn._presence_for_binary_op(self.presence, other.presence)
+            )
+
+        if isinstance(other, (float, int, torch.Tensor)):
+            return NumericColumn(self.values / other, presence=self.presence)
+
+        raise ValueError(f"Unsupported value {other}")
+
+    def __rtruediv__(self, other):
+        if isinstance(other, (float, int, torch.Tensor)):
+            return NumericColumn(other / self.values, presence=self.presence)
 
         raise ValueError(f"Unsupported value {other}")
 
@@ -96,7 +116,7 @@ class NumericColumn(ColumnBase):
         )
 
     def logit(self, eps=None) -> "NumericColumn":
-        if isinstance(eps, (None, float, int, torch.Tensor)):
+        if eps is None or isinstance(eps, (float, int, torch.Tensor)):
             return NumericColumn(
                 values=self.values.logit(eps),
                 presence=self.presence,
@@ -123,3 +143,12 @@ class NumericColumn(ColumnBase):
         mask = ~self.presence.numpy() if self.presence is not None else None
 
         return pa.array(values, mask=mask)
+
+    @staticmethod
+    def _presence_for_binary_op(
+        presence1: Optional[torch.BoolTensor],
+        presence2: Optional[torch.BoolTensor]
+    ) -> Optional[torch.BoolTensor]:
+        if presence1 is not None and presence2 is not None:
+            return presence1 & presence2
+        return presence1 or presence2
