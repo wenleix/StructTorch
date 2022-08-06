@@ -593,3 +593,17 @@ def _dtype_from_pytorch_dtype(dtype: torch.dtype, nullable: bool = False) -> DTy
         return Float32(nullable=nullable)
 
     raise ValueError(f"Unsupported PyTorch dtype: {dtype}")
+
+def _dtype_to_arrow_type(dtype: torch.dtype):
+    import pyarrow as pa
+
+    if dtype == torch.int32:
+        return pa.int32()
+    if dtype == torch.int64:
+        return pa.int64()
+    if dtype == torch.float32:
+        return pa.float32()
+    if dtype == torch.float64:
+        return pa.float64()
+
+    raise ValueError(f"Unsupported PyTorch dtype: {dtype}")

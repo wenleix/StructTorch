@@ -133,12 +133,29 @@ class NumericColumn(ColumnBase):
         return self._presence
 
     def __len__(self) -> int:
-        return len(self._values)
+        return self._values.numel()
 
     def to_arrow(self):
         # TODO: Check whether PyArrow is available 
         import pyarrow as pa
 
+        if not self.presence is not None and self.values.dtype != torch.bool:
+            # Wrap Tensor memory into Arrow buffer, this avoids dependency on NumPy
+            values_buffer = pa.foreign_buffer(
+                address=self.values.data_ptr(),
+                size=self.values.element_size() * self.values.numel(),
+                base=self.values
+            )
+
+            return pa.Array.from_buffers(
+                type=dt._dtype_to_arrow_type(self.values.dtype),
+                length=self.values.numel(),
+                buffers=[None, values_buffer],  # validity buffer is None
+            )
+
+        # Arrow's validity buffer is a compressed bitmap,
+        # while Axolotls's presence tensor will use 1 byte for each bool
+        # For now go through NumPy, we can do the bitmap compression to avoid dependency on NumPy
         values = self.values.numpy()
         mask = ~self.presence.numpy() if self.presence is not None else None
 
