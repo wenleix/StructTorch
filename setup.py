@@ -75,7 +75,6 @@ setup(
     install_requires=[
         'requests',
         'tabulate',
-        'numpy<1.22',   # Support Python 3.7
         pytorch_package_dep
     ],
     python_requires='>=3.7',
