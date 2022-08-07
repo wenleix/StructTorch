@@ -1,6 +1,10 @@
 # Axolotls
 
-Axolotls implements [Arrow Memory Layout](https://arrow.apache.org/docs/format/Columnar.html#physical-memory-layout) on top of PyTorch, with lightweight DataFrame-flavored API. Such structures are often useful to perform pre-processing after data is in Tensor format.
+Axolotls is still under early development. It is a Python package for data preprocessing in PyTorch models. It provides two high-level features:
+* Lightweight DataFrame (like Pandas) with [Arrow Memory Layout](https://arrow.apache.org/docs/format/Columnar.html#physical-memory-layout) implemented on top of PyTorch Tensors. 
+* Support variable-width and nested data types such as string, list, map.
+
+Usually, Axolotls is used to author data preprocessing module for PyTorch models that provides maximum flexibility and speed.
 
 ## Installation
 
@@ -8,16 +12,11 @@ You will need Python 3.7 or later. Also, we highly recommend installing an [Mini
 
 First, set up an environment. If you are using conda, create a conda environment:
 ```
-conda create --name axolotls python=3.7
+conda create --name axolotls python=3.8
 conda activate axolotls
 ```
 
-You can then install Axolotos from source:
+Install Axolotos from source:
 ```
-python setup.py install
-```
-
-For development, use the following command to install instead:
-```
-python setup.py develop
+pip install --user "git+https://github.com/wenleix/axolotls"
 ```
