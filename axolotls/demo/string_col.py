@@ -35,3 +35,10 @@ print(col2.__repr__() + '\n')
 print(str(col2))
 
 print(col2.to_arrow().__repr__())
+print("\n------------------------------------\n")
+
+# Create StringColumn directly from values and offsets Tensor
+strs = "abcde你好"
+values = torch.frombuffer(strs.encode('utf-8'), dtype=torch.uint8)
+col3 = ax.StringColumn(values, offsets=torch.IntTensor([0, 5, 11]))
+print(col3.__repr__() + '\n')
