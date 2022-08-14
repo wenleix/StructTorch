@@ -14,7 +14,7 @@ class ListColumn(ColumnBase):
 
         if not isinstance(values, ColumnBase):
             raise ValueError("ListColumn expects values to be ColumnBase")
-        if offsets.dim() != 1:
+        if not isinstance(offsets, torch.Tensor) or offsets.dim() != 1:
             raise ValueError("ListColumn expects 1D offsets Tensor")
 
         self._values = values
@@ -35,13 +35,22 @@ class ListColumn(ColumnBase):
             return None
 
         if isinstance(key, slice):
+            # non-continugous slice is not supported yet
+            assert key.step is None
+            start = key.start or 0
+            stop = key.stop or len(self)
+
+            values = self.values[self.offsets[start] : self.offsets[stop]]
+
             # convert offsets to length for selection
-            lengths = self.offsets[1:] - self.offsets[:-1]
+            lengths: torch.Tensor = self.offsets[1:] - self.offsets[:-1]
             lengths = lengths[key]
             # convert selected lengths back to offsets
-            offsets = torch.cat((torch.tensor([0]), torch.cumsum(lengths, dim=0)))
+            offsets = torch.cat((
+                torch.tensor([0], dtype=torch.int32),
+                torch.cumsum(lengths, dtype=torch.int32, dim=0)
+            ))
 
-            values = self.values[key]
             presence = self.presence[key] if self.presence is not None else None
             return ListColumn(values=values, offsets=offsets, presence=presence)
 

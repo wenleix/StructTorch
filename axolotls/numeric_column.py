@@ -7,7 +7,7 @@ class NumericColumn(ColumnBase):
     def __init__(self, values: torch.Tensor, presence: Optional[torch.BoolTensor] = None) -> None:
         super().__init__(dtype=dt._dtype_from_pytorch_dtype(dtype=values.dtype, nullable=presence is not None))
 
-        if values.dim() != 1:
+        if not isinstance(values, torch.Tensor) or values.dim() != 1:
             raise ValueError("NumericCollumn expects 1D values Tensor")
         if presence is not None and (values.shape != presence.shape):
             raise ValueError(f"Mismatched shape for values({values.shape}) and presence({presence.shape})")
@@ -138,14 +138,11 @@ class NumericColumn(ColumnBase):
     def to_arrow(self):
         # TODO: Check whether PyArrow is available 
         import pyarrow as pa
+        from .utils import _get_arrow_buffer_from_tensor
 
         if not self.presence is not None and self.values.dtype != torch.bool:
             # Wrap Tensor memory into Arrow buffer, this avoids dependency on NumPy
-            values_buffer = pa.foreign_buffer(
-                address=self.values.data_ptr(),
-                size=self.values.element_size() * self.values.numel(),
-                base=self.values
-            )
+            values_buffer = _get_arrow_buffer_from_tensor(self.values)
 
             return pa.Array.from_buffers(
                 type=dt._dtype_to_arrow_type(self.values.dtype),
