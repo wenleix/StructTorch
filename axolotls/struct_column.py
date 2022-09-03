@@ -49,9 +49,6 @@ class StructColumn(ColumnBase):
         first_col = next(iter(self.field_columns.values()))
         return len(first_col)
 
-    def __str__(self) -> str:
-        raise NotImplementedError
-
     def __repr__(self):
         rows = []
         for idx in range(len(self)):
@@ -64,6 +61,8 @@ class StructColumn(ColumnBase):
         )
         typ = f"dtype: {self._dtype}, length: {len(self)}"
         return tab + "\n" + typ    
+
+    __str__ = __repr__
 
     @property
     def field_columns(self) -> Dict[str, ColumnBase]:

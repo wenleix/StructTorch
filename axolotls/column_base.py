@@ -1,8 +1,34 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from . import dtypes as dt
 from tabulate import tabulate
+import torch.fx
+from .proxy import Proxy
 
-class ColumnBase(ABC):
+class ColumnMeta(ABCMeta):
+    def __init__(cls, name, bases, attrs):
+        # _proxyable_classes.setdefault(cls)
+        super().__init__(name, bases, attrs)
+
+    def __call__(cls, *args, **kwargs):
+        instance = cls.__new__(cls)  # type: ignore[call-overload]
+
+        found_proxies = []
+
+        def check_proxy(a):
+            if isinstance(a, Proxy):
+                found_proxies.append(a)
+
+        torch.fx.node.map_aggregate(args, check_proxy)
+        torch.fx.node.map_aggregate(kwargs, check_proxy)
+
+        if len(found_proxies) != 0:
+            tracer = found_proxies[0].tracer
+            return tracer.create_proxy('call_function', cls, args, kwargs)
+        else:
+            cls.__init__(instance, *args, **kwargs)  # type: ignore[misc]
+            return instance
+
+class ColumnBase(ABC, metaclass=ColumnMeta):
     @abstractmethod
     def __init__(self, dtype: dt.DType) -> None:
         self._dtype = dtype
