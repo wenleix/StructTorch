@@ -2,15 +2,22 @@ from abc import ABC, abstractmethod, ABCMeta
 from . import dtypes as dt
 from tabulate import tabulate
 import torch.fx
-from .proxy import Proxy
+from enum import Enum
+from .proxy.proxy_base import Proxy
+
+class TraceMode(Enum):
+    HALF_BAKED = "half_baked"
+    TORCH_FX = "torch_fx"
+    JAX_MIMIC = "jax_mimic"
+
+TRACE_MODE = TraceMode.JAX_MIMIC
 
 class ColumnMeta(ABCMeta):
     def __init__(cls, name, bases, attrs):
-        # _proxyable_classes.setdefault(cls)
         super().__init__(name, bases, attrs)
 
     def __call__(cls, *args, **kwargs):
-        instance = cls.__new__(cls)  # type: ignore[call-overload]
+        instance = cls.__new__(cls)
 
         found_proxies = []
 
@@ -20,13 +27,14 @@ class ColumnMeta(ABCMeta):
 
         torch.fx.node.map_aggregate(args, check_proxy)
         torch.fx.node.map_aggregate(kwargs, check_proxy)
-
+        
         if len(found_proxies) != 0:
             tracer = found_proxies[0].tracer
             return tracer.create_proxy('call_function', cls, args, kwargs)
         else:
             cls.__init__(instance, *args, **kwargs)  # type: ignore[misc]
             return instance
+
 
 class ColumnBase(ABC, metaclass=ColumnMeta):
     @abstractmethod

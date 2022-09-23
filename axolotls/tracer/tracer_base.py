@@ -1,12 +1,14 @@
 from typing import Callable, Dict, Any, List, Tuple, Optional, Union, Set, NamedTuple
-import functools
-import math
-import axolotls as ax
-from itertools import chain
-import torch
 from types import ModuleType
+import axolotls.proxy.proxy_base as px
+from axolotls.proxy.graph import Graph, Node, Target
+import torch
+import math
 import inspect
 import builtins
+from itertools import chain
+import functools
+from axolotls.column_base import ColumnBase
 
 BaseArgumentTypes = Union[str, int, float, bool, torch.Tensor]
 
@@ -16,7 +18,7 @@ Argument = Optional[
         List[Any],  # actually Argument
         Dict[str, Any],  # actually Argument
         slice,  # Slice[Argument, Argument, Argument], but slice is not a templated type in typing
-        'Node',
+        Node,
         BaseArgumentTypes
     ]
 ]
@@ -136,11 +138,11 @@ def _create_wrapped_func(orig_fn):
     def wrapped(*args, **kwargs):
         proxy = None
         for arg in args:
-            if isinstance(arg, ax.proxy.Proxy):
+            if isinstance(arg, px.Proxy):
                 proxy = arg
                 break
         for arg in kwargs.values():
-            if isinstance(arg, ax.proxy.Proxy):
+            if isinstance(arg, px.Proxy):
                 proxy = arg
                 break
         if proxy is not None:
@@ -185,8 +187,8 @@ def _patch_autowrap_functions(
                 patcher.patch(frame_dict, name, _create_wrapped_func(value))
 
 
-class SimpleTracer:
-    graph: ax.proxy.Graph
+class Tracer:
+    graph: Graph
 
     def __init__(
         self, 
@@ -203,8 +205,8 @@ class SimpleTracer:
         # modules we see while tracing
         self._autowrap_modules: List[ModuleType] = list(autowrap_modules)
 
-    def proxy(self, node: ax.proxy.Node) -> ax.proxy.Proxy:
-        return ax.proxy.Proxy(node, self)
+    def proxy(self, node: Node) -> px.Proxy:
+        return px.Proxy(node, self)
 
     def create_arg(self, a: Any) -> Argument:
         if isinstance(a, tuple) and hasattr(a, '_fields'):
@@ -238,11 +240,11 @@ class SimpleTracer:
                 self.tensor_attrs[a] = qualname
                 setattr(self.root, qualname, a)
             return self.create_node("get_attr", qualname, a, {})
-        elif isinstance(a, ax.proxy.Proxy):
+        elif isinstance(a, px.Proxy):
             # base case: we unwrap the Proxy object
             return a.node
         # TODO: Should we anatomate Columns or keep them as a generate node component? 
-        elif isinstance(a, ax.ColumnBase):
+        elif isinstance(a, ColumnBase):
             i = 0
             while True:
                 qualname = f"_{a.__class__.__name__}_constant_{i}"
@@ -254,12 +256,12 @@ class SimpleTracer:
 
         return a
 
-    def create_node(self, kind: str, target: ax.proxy.Target, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> ax.proxy.Node: 
+    def create_node(self, kind: str, target: Target, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> Node: 
         return self.graph.create_node(kind, target, args, kwargs)
 
     # Proxy is created on top of nodes
     # proxy represents a variable or an operation, 
-    def create_proxy(self, kind: str, target: ax.proxy.Target, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> ax.proxy.Proxy:
+    def create_proxy(self, kind: str, target: Target, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> px.Proxy:
         args_ = self.create_arg(args)
         kwargs_ = self.create_arg(kwargs)
         assert isinstance(args_, tuple)
@@ -269,16 +271,17 @@ class SimpleTracer:
         proxy = self.proxy(node)
         return proxy
 
-    def trace(self, root: Callable[..., Any], ) -> ax.proxy.Graph:
+    def trace(self, root: Callable[..., Any], concrete_args: Optional[Dict[str, Any]] = None) -> Graph:
         self.root = root
-        self.graph = ax.proxy.Graph()
+        self.graph = Graph()
         self.tensor_attrs: Dict[torch.Tensor, str] = {}
 
-        co = root.__code__
+        fn_for_analysis = inspect.unwrap(root)
+        co = fn_for_analysis.__code__
         total_args = co.co_argcount + co.co_kwonlyargcount
         names_iter = iter(co.co_varnames)
 
-        sig = inspect.signature(root)
+        sig = inspect.signature(fn_for_analysis)
         arg_names = [next(names_iter) for idx in range(total_args)]
         args = [self.create_proxy("placeholder", name, (), {}) for name in arg_names]
 
@@ -293,54 +296,3 @@ class SimpleTracer:
             self.create_proxy("output", "output", (result,), {})
 
         return self.graph
-
-
-@wrap
-def udf_normalize(col: ax.NumericColumn, shift: float, scale: float) -> ax.NumericColumn:
-    result = (col.values + shift) * scale
-    return ax.NumericColumn(values=result)
-
-@wrap
-def torch_arange(start: int, end: int, step: int = 1):
-    return torch.arange(start, end, step)
-
-def nonudf_bucketize(col: ax.NumericColumn, boundaries: List[float]) -> ax.ListColumn:
-    boundary_tensor = torch.tensor(boundaries)
-    result = torch.bucketize(col.values, boundary_tensor)
-    result_col = ax.NumericColumn(values=result)
-    offsets = torch_arange(0, result.numel() + 1)
-    return ax.ListColumn(values=result_col, offsets=offsets)
-
-def preproc(row_batch: ax.StructColumn):
-    row_batch["float_features"]["f1"] = udf_normalize(row_batch["float_features"]["f1"], 1.0, 0.1)
-    row_batch["id_list_features"] = ax.StructColumn(
-        field_columns={
-            "derived_id2": nonudf_bucketize(row_batch["float_features"]["f2"], [4., 5., 7.1, 9.])
-        },
-    )
-    return row_batch
-
-def main():
-    row_batch = ax.StructColumn(
-        field_columns={
-            "float_features": ax.StructColumn(
-                field_columns={
-                    "f1": ax.NumericColumn(
-                        values=torch.FloatTensor([1., 2., 3., 4.]),
-                    ),
-                    "f2": ax.NumericColumn(
-                        values=torch.FloatTensor([5., 6., 7., 8.]),
-                    ),
-                },
-            ),
-        },
-    )
-    row_batch = preproc(row_batch)
-    print(row_batch)
-
-    tracer = SimpleTracer()
-    graph = tracer.trace(preproc)
-    print(graph)
-    
-if __name__ == "__main__":
-    main()
